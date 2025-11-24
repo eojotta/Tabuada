@@ -1,6 +1,8 @@
 package br.senai.sp.jandira.tabuada.gui;
 
+import br.senai.sp.jandira.tabuada.model.TabuadaUsuario;
 import javafx.application.Application;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -8,10 +10,16 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.awt.*;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.time.LocalDateTime;
 
 public class TelaTabuada extends Application {
 
@@ -19,9 +27,10 @@ public class TelaTabuada extends Application {
     @Override
     public void start(Stage stage) throws Exception {
             // definir o tamanho da tela //
-        stage.setWidth(500);
-        stage.setHeight(500);
+      //stage.setWidth(600);
+        stage.setHeight(700);
         stage.setTitle("Tabuada");
+        stage.setResizable(false);
 
 
         // Criar o root - componente de leiaute principal //
@@ -36,22 +45,29 @@ public class TelaTabuada extends Application {
 
         //Criar o header da tela
         VBox header = new VBox();
-        header.setPrefHeight(100);
+        //header.setPrefHeight(100);//
         header.setStyle("-fx-background-color: #ff58de;");
 
         //Colocar o conteudo do header//
         Label labeltitulo = new Label("Tabuada");
+        labeltitulo.setPadding(new Insets(8, 8, 0, 8));
         labeltitulo.setStyle("-fx-text-fill: white;-fx-font-size: 20px;-fx-font-weight: bold;");
+
         Label labelsubtitulo = new Label("Crie a tabuada que a sua imaginação mandar");
+        labelsubtitulo.setPadding(new Insets(0, 8, 8, 8));
+        labelsubtitulo.setStyle("-fx-text-fill: #ffffff;");
 
         // Colocar os Labels dentro do header
-            header.getChildren().addAll(labelsubtitulo, labeltitulo);
+            header.getChildren().addAll(labeltitulo, labelsubtitulo);
 
 
         //Criar o grid do formulário//
         GridPane gridFormulario = new GridPane();
-        gridFormulario.setPrefHeight(100);
-        gridFormulario.setStyle("-fx-background-color: #ffffff;");
+        //gridFormulario.setPrefHeight(100);//
+        gridFormulario.setStyle("-fx-background-color: #ff58de;");
+        gridFormulario.setVgap(10);
+        gridFormulario.setHgap(10);
+        gridFormulario.setPadding(new Insets(16, 8, 16, 8));
 
         //Conteudo do grid do formulário
         Label labelmultiplicando = new Label("multiplicando");
@@ -79,10 +95,14 @@ public class TelaTabuada extends Application {
 
 
         //Criar a caixa dos botões
-        HBox boxBotoes = new HBox();
-        boxBotoes.setPrefHeight(100);
-        boxBotoes.setStyle("-fx-background-color: #602626;");
+        Pane paneButtons = new Pane();
+        paneButtons.setPadding(new Insets(16, 0, 8, 0));
 
+        HBox boxBotoes = new HBox();
+        boxBotoes.setPadding(new Insets(16, 0, 16, 8));
+        boxBotoes.setStyle("-fx-background-color: #ffffff;");
+        boxBotoes.setSpacing(10);
+        paneButtons.getChildren().add(boxBotoes);
 
 
         //Fazer os Botoes
@@ -98,23 +118,16 @@ public class TelaTabuada extends Application {
 
         //Criar a caixa de resultado
         VBox boxResultado = new VBox();
-        boxResultado.setPrefHeight(100);
-        boxResultado.setStyle("-fx-background-color: #ff58de");
+       boxResultado.setPrefHeight(300);
+        //boxResultado.setStyle("-fx-background-color: #ff73e5");
 
 
         //Criar os componentes do BOXrESULTADOS
         Label labelResultado = new Label("Resultado");
+        labelResultado.setPadding(new Insets(8, 16, 0, 8));
+        labelResultado.setStyle("-fx-background-color: #fb82b4;");
         ListView listaTabuada = new ListView();
-        String[] cidades = new String[5];
-        cidades[0] = "Itapevi";
-        cidades[1] = "Jandira";
-        cidades[2] = "Barueri";
-        cidades[3] = "Carapicuíba";
-        cidades[4] = "Osasco";
-        listaTabuada.getItems().addAll(cidades);
-        listaTabuada.getItems().add("Cotia");
-        listaTabuada.getItems().addAll("Curitiba");
-        listaTabuada.getItems().addAll("Fortaleza");
+        listaTabuada.setPadding(new Insets(8, 8, 8, 8));
 
         //Adicionando
         boxResultado.getChildren().addAll(labelResultado, listaTabuada);
@@ -122,9 +135,8 @@ public class TelaTabuada extends Application {
         //Adicionar componentes ao root
         root.getChildren().add(header);
         root.getChildren().add(gridFormulario);
-        root.getChildren().add(boxBotoes);
         root.getChildren().add(boxResultado);
-
+        root.getChildren().add(paneButtons);
 
 
 
@@ -138,7 +150,55 @@ public class TelaTabuada extends Application {
 
         stage.show();
 
+        botaoCalcular.setOnAction(e -> {
+            TabuadaUsuario tabuada = new TabuadaUsuario();
+
+
+            tabuada.multiplicando =
+                    Integer.parseInt(textFieldmultiplicando.getText());
+
+            tabuada.multiplicadorInicial =
+                Integer.parseInt(textFieldMenormultiplicador.getText());
+
+            tabuada.multiplicadorFinal =
+                    Integer.parseInt( textFieldMaiormultiplicador.getText());
+
+           String[] resultado = tabuada.CalcularTabuada();
+           listaTabuada.getItems().add(resultado);
+
+            //gravar os dados da tabuada em arquivo
+            Path arquivo = Path.of("C:\\Users\\25203692\\DS1T\\Tabuada");
+
+            String dados = textFieldmultiplicando.getText() + ";" + textFieldMenormultiplicador.getText() + ";" + textFieldMaiormultiplicador.getText() + ";" + LocalDateTime.now() + "\n";
+
+            try{
+                Files.writeString(arquivo,"SenaiJandira\n", StandardOpenOption.APPEND);
+            } catch (IOException erro){
+                System.out.println(erro.getMessage());
+            }
+
+        });
+
+        //limpar
+        botaoLimpar.setOnAction(e -> {
+            textFieldmultiplicando.clear();
+            textFieldMenormultiplicador.clear();
+            textFieldMaiormultiplicador.clear();
+            listaTabuada.getItems().clear();
+            textFieldMenormultiplicador.requestFocus();
+        });
+
+
+           //sair
+        botaoSair.setOnAction(e -> {
+
+
+
+        });
     }
+
+
+
 
 
 
